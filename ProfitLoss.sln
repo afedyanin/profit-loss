@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6017166A-DF97-4E20-B53E-37C40557222B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfitLoss", "src\ProfitLoss\ProfitLoss.csproj", "{D68DDE59-2EE5-4813-AF30-630F98C22EAE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1DA24305-0C98-4D6A-A7A2-1877014E44B7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfitLossTests", "tests\ProfitLossTests\ProfitLossTests.csproj", "{45D8948B-1B14-4DEB-9EEC-9AC696C4B18B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{87674759-B1CD-4C0A-9282-0C688EDA5AE4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		FullAnalyzers.ruleset = FullAnalyzers.ruleset
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D68DDE59-2EE5-4813-AF30-630F98C22EAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D68DDE59-2EE5-4813-AF30-630F98C22EAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D68DDE59-2EE5-4813-AF30-630F98C22EAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D68DDE59-2EE5-4813-AF30-630F98C22EAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45D8948B-1B14-4DEB-9EEC-9AC696C4B18B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45D8948B-1B14-4DEB-9EEC-9AC696C4B18B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45D8948B-1B14-4DEB-9EEC-9AC696C4B18B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45D8948B-1B14-4DEB-9EEC-9AC696C4B18B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D68DDE59-2EE5-4813-AF30-630F98C22EAE} = {6017166A-DF97-4E20-B53E-37C40557222B}
+		{45D8948B-1B14-4DEB-9EEC-9AC696C4B18B} = {1DA24305-0C98-4D6A-A7A2-1877014E44B7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7DDCA231-5AEA-41A5-997D-9CFE5F8C5D3F}
+	EndGlobalSection
+EndGlobal
