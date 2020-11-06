@@ -7,21 +7,13 @@ namespace ProfitLoss
     {
         public Position((decimal qty, decimal price)[] deals = null)
         {
-            deals ??= Array.Empty<(decimal qty, decimal price)>();
-
-            if (deals.Length <= 0)
+            if (deals == null || deals.Length <= 0)
             {
                 return;
             }
 
             var typed = deals.Select(d => new Deal(d.qty, d.price)).ToArray();
             CalculateBaseValues(typed);
-        }
-
-        internal Position(Deal[] deals)
-        {
-            deals ??= Array.Empty<Deal>();
-            CalculateBaseValues(deals);
         }
 
         public decimal AvgPrice => Current.Price;

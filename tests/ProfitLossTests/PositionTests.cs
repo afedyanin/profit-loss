@@ -15,6 +15,12 @@ namespace ProfitLossTests
             (3, 103),
         };
 
+        private static (decimal qty, decimal price)[] ShortTrade => new (decimal, decimal)[]
+        {
+            (-20, 100), // -2000
+            (10, 80),  // PNL = 200
+        };
+
         [Test]
         public void CanAddSingleDeals()
         {
@@ -136,6 +142,14 @@ namespace ProfitLossTests
             Assert.AreEqual(-3, p.Qty);
             Assert.AreEqual(101m, p.AvgPrice);
             Assert.AreEqual(56m, Math.Round(p.RealizedProfitLoss, 2));
+        }
+
+        [Test]
+        public void CanGetPnLForShortTrade()
+        {
+            var p = new Position(ShortTrade);
+
+            Assert.AreEqual(200m, p.RealizedProfitLoss);
         }
     }
 }
