@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ProfitLoss;
 
@@ -21,76 +22,74 @@ namespace ProfitLossTests
             (10, 80),  // PNL = 200
         };
 
+        private static (decimal qty, decimal price)[] FullTrades => new (decimal, decimal)[]
+        {
+            (12, 100),
+            (17, 99),
+            (-9, 101),
+            (-4, 105),
+            (3, 103),
+            (10, 100),
+            (-12, 101),
+            (-19, 101),
+            (-22, 101),
+        };
+
         [Test]
         public void CanAddSingleDeals()
         {
-            var p = new Position();
+            var p1 = new Position(InitialDeals[0].qty, InitialDeals[0].price);
 
-            p.Append(InitialDeals[0].qty, InitialDeals[0].price);
-            Assert.AreEqual(decimal.Zero, p.RealizedProfitLoss);
-            Assert.AreEqual(100, p.AvgPrice);
-            Assert.AreEqual(12, p.Qty);
+            Assert.True(new TradeItem(12, 100).TheSame(p1.Current));
+            Console.WriteLine(p1);
 
-            p.Append(InitialDeals[1].qty, InitialDeals[1].price);
-            Assert.AreEqual(decimal.Zero, p.RealizedProfitLoss);
+            var p2 = new Position(InitialDeals[1].qty, InitialDeals[1].price, p1);
+
             var totalQty = 12m + 17m;
             var avgPrice = ((100m * 12m) + (99m * 17m)) / totalQty;
-            Assert.AreEqual(avgPrice, p.AvgPrice);
-            Assert.AreEqual(totalQty, p.Qty);
+            Assert.True(new TradeItem(totalQty, avgPrice).TheSame(p2.Current));
+            Console.WriteLine(p2);
 
-            p.Append(InitialDeals[2].qty, InitialDeals[2].price);
+            var p3 = new Position(InitialDeals[2].qty, InitialDeals[2].price, p2);
+
             var pnl = 9 * (InitialDeals[2].price - avgPrice);
             totalQty -= 9;
-            Assert.AreEqual(pnl, p.RealizedProfitLoss);
-            Assert.AreEqual(avgPrice, p.AvgPrice);
-            Assert.AreEqual(totalQty, p.Qty);
+            Assert.True(new TradeItem(totalQty, avgPrice, pnl).TheSame(p3.Current));
+            Console.WriteLine(p3);
 
-            p.Append(InitialDeals[3].qty, InitialDeals[3].price);
-            pnl += 4 * (InitialDeals[3].price - avgPrice);
+            var p4 = new Position(InitialDeals[3].qty, InitialDeals[3].price, p3);
+
+            pnl = 4 * (InitialDeals[3].price - avgPrice);
             totalQty -= 4;
-            Assert.AreEqual(pnl, p.RealizedProfitLoss);
-            Assert.AreEqual(avgPrice, p.AvgPrice);
-            Assert.AreEqual(totalQty, p.Qty);
+            Assert.True(new TradeItem(totalQty, avgPrice, pnl).TheSame(p4.Current));
+            Console.WriteLine(p4);
 
-            var amt = p.Amount;
-            p.Append(InitialDeals[4].qty, InitialDeals[4].price);
+            var amt = p4.Current.Amount;
+            var p5 = new Position(InitialDeals[4].qty, InitialDeals[4].price, p4);
+
             totalQty += InitialDeals[4].qty;
             var dealAmt = InitialDeals[4].qty * InitialDeals[4].price;
             avgPrice = (amt + dealAmt) / totalQty;
-            Assert.AreEqual(pnl, p.RealizedProfitLoss);
-            Assert.AreEqual(avgPrice, p.AvgPrice);
-            Assert.AreEqual(totalQty, p.Qty);
-
-            Console.WriteLine(p);
-
-            var p2 = new Position();
-
-            foreach (var d in InitialDeals)
-            {
-                p2.Append(d.qty, d.price);
-            }
-
-            Console.WriteLine(p2);
-
-            var p3 = new Position(InitialDeals);
-            Console.WriteLine(p3);
+            Assert.True(new TradeItem(totalQty, avgPrice).TheSame(p5.Current));
+            Console.WriteLine(p5);
         }
 
         [Test]
         public void CanCalculateBasicValues()
         {
             var p = new Position(InitialDeals);
+            var shouldBe = new TradeItem(19m, 99.75m, 32.25m);
 
-            Assert.AreEqual(19m, p.Qty);
-            Assert.AreEqual(99.75m, p.AvgPrice);
-            Assert.AreEqual(32.25m, Math.Round(p.RealizedProfitLoss, 2));
+            Console.WriteLine(shouldBe);
+            Console.WriteLine(p.Current);
+
+            Assert.True(shouldBe.TheSame(p.Current));
         }
 
         [TestCase(99, -14.25)]
         public void CanGetUnrealizedPnL(decimal exitPrice, decimal expectedPnL)
         {
             var p = new Position(InitialDeals);
-
             var unrealizedPnL = p.GetUnrealizedProfitLoss(exitPrice);
 
             Assert.AreEqual(expectedPnL, unrealizedPnL);
@@ -99,57 +98,80 @@ namespace ProfitLossTests
         [Test]
         public void Scenario1FiilIncreasePosition()
         {
-            var p = new Position(InitialDeals);
+            var p0 = new Position(InitialDeals);
+            var p = new Position(10, 100, p0);
+            var shouldBe = new TradeItem(29m, 99.8362m);
 
-            p.Append(10m, 100m);
-
-            Assert.AreEqual(29m, p.Qty);
-            Assert.AreEqual(99.8362m, Math.Round(p.AvgPrice, 4));
-            Assert.AreEqual(32.25m, Math.Round(p.RealizedProfitLoss, 2));
+            Assert.True(shouldBe.TheSame(p.Current));
+            Assert.AreEqual(32.25m, Math.Round(p0.Current.RealizedProfitLoss, 2));
+            Assert.AreEqual(decimal.Zero, p.Current.RealizedProfitLoss);
         }
 
         [Test]
         public void Scenario2FiilPartiallyDecreasePosition()
         {
-            var p = new Position(InitialDeals);
+            var p0 = new Position(InitialDeals);
+            var p = new Position(-12, 101, p0);
 
-            p.Append(-12m, 101m);
+            // 32.25m + 15 = 47.25m
+            var pnl = p0.Current.RealizedProfitLoss + p.Current.RealizedProfitLoss;
+            var shouldBe = new TradeItem(7, 99.75m, 15);
 
-            Assert.AreEqual(7, p.Qty);
-            Assert.AreEqual(99.75m, p.AvgPrice);
-            Assert.AreEqual(47.25m, Math.Round(p.RealizedProfitLoss, 2));
+            Assert.True(shouldBe.TheSame(p.Current));
+            Assert.AreEqual(47.25m, Math.Round(pnl, 2));
         }
 
         [Test]
         public void Scenario3FiilFlattenPosition()
         {
-            var p = new Position(InitialDeals);
+            var p0 = new Position(InitialDeals);
+            var p = new Position(-19m, 101m, p0);
 
-            p.Append(-19m, 101m);
+            // 32.25m + 23.75m = 56m
+            var pnl = p0.Current.RealizedProfitLoss + p.Current.RealizedProfitLoss;
+            var shouldBe = new TradeItem(decimal.Zero, decimal.Zero, 23.75m);
 
-            Assert.AreEqual(decimal.Zero, p.Qty);
-            Assert.AreEqual(decimal.Zero, p.AvgPrice);
-            Assert.AreEqual(56m, Math.Round(p.RealizedProfitLoss, 2));
+            Assert.True(shouldBe.TheSame(p.Current));
+            Assert.AreEqual(56m, Math.Round(pnl, 2));
         }
 
         [Test]
         public void Scenario4FiilReversePosition()
         {
-            var p = new Position(InitialDeals);
+            var p0 = new Position(InitialDeals);
+            var p = new Position(-22m, 101m, p0);
 
-            p.Append(-22m, 101m);
+            // 32.25m + 23.75m = 56m
+            var pnl = p0.Current.RealizedProfitLoss + p.Current.RealizedProfitLoss;
+            var shouldBe = new TradeItem(-3, 101m, 23.75m);
 
-            Assert.AreEqual(-3, p.Qty);
-            Assert.AreEqual(101m, p.AvgPrice);
-            Assert.AreEqual(56m, Math.Round(p.RealizedProfitLoss, 2));
+            Assert.True(shouldBe.TheSame(p.Current));
+            Assert.AreEqual(56m, Math.Round(pnl, 2));
         }
 
         [Test]
         public void CanGetPnLForShortTrade()
         {
             var p = new Position(ShortTrade);
+            Assert.AreEqual(200m, p.Current.RealizedProfitLoss);
+        }
 
-            Assert.AreEqual(200m, p.RealizedProfitLoss);
+        [Test]
+        public void CanCalculateFullTrades()
+        {
+            var p = Position.Empty;
+            var res = new List<Position>() { p };
+
+            foreach (var (qty, price) in FullTrades)
+            {
+                p = new Position(qty, price, p);
+                res.Add(p);
+            }
+
+            foreach (var pos in res)
+            {
+                Console.WriteLine(pos);
+            }
         }
     }
 }
